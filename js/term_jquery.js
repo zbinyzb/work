@@ -1,0 +1,135 @@
+$(function (){//在DOM加载完成后运行预定函数
+    var url = "http://10.0.78.25:8624/goushushenpixitong/test/term"//请求URL
+    var laboratory;
+    
+
+    //查询所有学期信息
+    $.get(url + "/list",
+        {currentPage: 1, pageSize: 5},//参数类型
+        function (json) {
+            laboratory = json.data;
+
+            for (var i = laboratory.length -1; i >=0; i--){
+                 var id = laboratory[i].id;
+                 var name = laboratory[i].name;
+                 var remarks = laboratory[i].remarks;
+
+
+                 $(".List table tbody").append(//在List标签添加输出json数据表格
+                     "<tr>"+
+                        "<td>" + id + "</td>" +
+                        "<td>" + name + "</td>" +
+                        "<td>" + remarks + "</td>" +
+                     "</tr>"
+                 );
+            }
+        }
+    );
+    // //查询学期单条记录
+    $("#getOne").click(function () {    //点击id = getOne标签执行
+        var id = $("input[name='fixId']").val();
+        console.log(id);
+
+        $.get(url,
+            {id: id},
+            function (json) {
+                console.log(json.data);
+                var institute = json.data;
+
+                $("input[name='id']").val(institute.id);
+                $("input[name='name']").val(institute.name);
+                $("input[name='remarks']").val(institute.remarks);
+            });
+
+    });
+
+
+
+    //添加学期记录
+    $.post(url,
+        {id: id, name: name, remarks: remarks},//相关参数
+        function(data){
+            alert("添加成功");
+            console.log(data.id);
+            console.log(data.name);
+            console.log(data.remarks);
+        },"json");
+
+    //更新学期记录 
+    $.ajax({
+        type: 'PUT',
+        url: url,
+        data: {id:id, name: name, remarks: remarks},
+        complete: function (json) {
+            console.log(json.responseJSON);
+            if (json.responseJSON.code == 200) {
+                alert("修改成功");
+                window.location.href = "#";//定位到要跳转的html文件
+            }
+        }
+    });
+
+    //添加学期记录 By Ajax
+    $("#amLaboratory").click(function () {
+        var id = $("input[name='id']").val();
+        var name = $("input[name='name']").val();
+        var remarks = $("input[name='remarks']").val();
+
+        var isAdd = new Boolean(true);
+
+        for (var i = laboratory.length -1; i >=0; i--){
+            if (laboratory[i].id == id) {
+                isAdd = false;
+                break;
+            }
+        }
+
+        if (isAdd){
+            $.post(url,                 //jQuery的简单POST请求函数，用于替换复杂的$.ajax
+                {id: id, name: name, remarks: remarks},
+                function (json) {
+                    if (json.code == 200){
+                        alert("添加成功");
+                        window.location.href = "#"//定位到要跳转的html文件
+                    }
+                })
+        } 
+    //更新学期记录 By ajax
+        else {
+            $.ajax({
+                type: 'PUT',
+                url: url,
+                data: {id:id, name: name, remarks: remarks},
+                complete: function (json) {
+                    console.log(json.responseJSON);
+                    if (json.responseJSON.code == 200) {
+                        alert("修改成功");
+                        window.location.href = "#";//定位到要跳转的html文件
+                    }
+                }
+            })
+        }
+    })
+
+});
+    //删除学期记录
+    $("#delete").click(function () {
+        var id = $("input[name='deleteId']").val();
+        // console.log(id);
+
+        $.ajax({
+            type: 'DELETE',
+            url: url,
+            data: {id: id},
+            complete: function (json) {
+                console.log(json.responseJSON);
+                if (json.responseJSON.code == 200) {
+                    alert("删除成功");
+                    window.location.href = "#";//定位到要跳转的html文件
+                }
+            }
+        });
+
+    });
+
+    
